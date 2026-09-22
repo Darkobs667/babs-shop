@@ -4,7 +4,9 @@ import { desc, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { categories, productImages, products } from "@/lib/db/schema";
 
-export const revalidate = 300;
+// La base peut être indisponible pendant `next build`; le catalogue est rendu à la requête.
+// Les pages produit publiques pourront employer ISR lorsque Neon/Supabase est configuré.
+export const dynamic = "force-dynamic";
 export default async function HomePage() {
   const [featured, categoryList] = await Promise.all([
     db.select({ id: products.id, name: products.name, slug: products.slug, price: products.price, imageUrl: productImages.url }).from(products).leftJoin(productImages, eq(productImages.productId, products.id)).where(eq(products.featured, 1)).orderBy(desc(products.createdAt)).limit(8),

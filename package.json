@@ -1,7 +1,7 @@
 {
   "name": "babs-catalog",
   "private": true,
-  "scripts": { "dev": "next dev", "build": "next build", "start": "next start", "db:generate": "drizzle-kit generate", "db:migrate": "drizzle-kit migrate" },
+  "scripts": { "dev": "next dev", "build": "next build", "start": "next start", "db:generate": "drizzle-kit generate", "db:migrate": "drizzle-kit migrate", "admin:hash": "node scripts/hash-admin-password.mjs", "admin:verify": "node scripts/verify-admin-password.mjs" },
   "dependencies": {
     "@uploadthing/react": "^7.3.3",
     "@vercel/analytics": "^1.5.0",
@@ -17,5 +17,5 @@
     "zod": "^3.24.0",
     "zustand": "^5.0.3"
   },
-  "devDependencies": { "@types/bcryptjs": "^2.4.6", "@types/node": "^22", "@types/react": "^19", "autoprefixer": "^10.4.20", "drizzle-kit": "^0.30.0", "tailwindcss": "^3.4.17", "typescript": "^5" }
+  "devDependencies": { "@types/bcryptjs": "^2.4.6", "@types/node": "^22", "@types/react": "^19", "autoprefixer": "^10.4.20", "dotenv": "^16.4.7", "drizzle-kit": "^0.30.0", "tailwindcss": "^3.4.17", "typescript": "^5" }
 }
