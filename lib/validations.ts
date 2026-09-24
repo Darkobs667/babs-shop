@@ -5,6 +5,7 @@ export const productInput = z.object({
   description: z.string().max(5000).default(""), price: z.coerce.number().nonnegative(), categoryId: z.string().uuid().nullable().optional(), categoryName: z.string().trim().min(2).max(80).optional(),
   published: z.boolean().default(false),
   featured: z.boolean().default(false),
+  stock: z.number().int().nonnegative().max(999999).default(0),
   imageUrls: z.array(z.string().url()).max(8).default([]),
   variants: z.array(z.object({ name: z.string().trim().min(1).max(100), sku: z.string().trim().max(80).optional(), price: z.number().nonnegative().nullable(), stock: z.number().int().nonnegative().max(999999) })).max(30).default([]),
 });

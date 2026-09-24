@@ -18,8 +18,8 @@ export async function saveProduct(input: unknown) {
       categoryId = existing[0]?.id ?? (await tx.insert(categories).values({ name: categoryName, slug }).returning())[0]!.id;
     }
     const [saved] = id
-      ? await tx.update(products).set({ ...productData, categoryId, published: data.published ? 1 : 0, featured: data.featured ? 1 : 0, price: String(data.price), updatedAt: new Date() }).where(eq(products.id, id)).returning()
-      : await tx.insert(products).values({ ...productData, categoryId, published: data.published ? 1 : 0, featured: data.featured ? 1 : 0, price: String(data.price) }).returning();
+      ? await tx.update(products).set({ ...productData, categoryId, published: data.published ? 1 : 0, featured: data.featured ? 1 : 0, stock: data.stock, price: String(data.price), updatedAt: new Date() }).where(eq(products.id, id)).returning()
+      : await tx.insert(products).values({ ...productData, categoryId, published: data.published ? 1 : 0, featured: data.featured ? 1 : 0, stock: data.stock, price: String(data.price) }).returning();
     if (!saved) throw new Error("Produit introuvable");
     if (id) {
       await tx.delete(productImages).where(eq(productImages.productId, saved.id));

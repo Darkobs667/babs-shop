@@ -7,7 +7,7 @@ import { UploadDropzone } from "@/components/uploadthing";
 type Props = { value: string[]; onChange: (urls: string[]) => void };
 export function ProductImageUpload({ value, onChange }: Props) {
   return <div className="space-y-3">
-    <UploadDropzone endpoint="productImage" onClientUploadComplete={(files) => onChange([...value, ...files.map((file) => file.ufsUrl)])} onUploadError={(error) => window.alert(error.message)} />
+    <UploadDropzone endpoint="productImage" onClientUploadComplete={(files) => { const urls = files.map((file) => file.ufsUrl ?? file.url ?? file.serverData?.url).filter((url): url is string => Boolean(url)); onChange([...value, ...urls]); }} onUploadError={(error) => window.alert(error.message)} />
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
       {value.map((url) => <div key={url} className="group relative aspect-square overflow-hidden rounded-md border">
         <Image src={url} alt="Aperçu produit" fill className="object-cover" sizes="(max-width: 640px) 50vw, 25vw" />

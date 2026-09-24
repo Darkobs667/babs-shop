@@ -15,6 +15,13 @@
       "when": 1790281548376,
       "tag": "0001_luxuriant_energizer",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790291365313,
+      "tag": "0002_real_queen_noir",
+      "breakpoints": true
     }
   ]
 }
