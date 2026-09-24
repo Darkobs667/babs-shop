@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { integer, numeric, pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { date, integer, numeric, pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 
 export const orderStatus = pgEnum("order_status", ["PENDING_WHATSAPP", "CONFIRMED", "FULFILLED", "CANCELLED"]);
 
@@ -60,7 +60,19 @@ export const orderItems = pgTable("order_items", {
   quantity: integer("quantity").notNull(),
 });
 
+// Agrégat léger : une écriture par vue, sans stocker d'identifiant personnel.
+export const dailyVisits = pgTable("daily_visits", {
+  day: date("day").primaryKey(),
+  views: integer("views").notNull().default(0),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
 export const productsRelations = relations(products, ({ one, many }) => ({
   category: one(categories, { fields: [products.categoryId], references: [categories.id] }),
   images: many(productImages), variants: many(productVariants),
 }));
+export const categoriesRelations = relations(categories, ({ many }) => ({ products: many(products) }));
+export const productImagesRelations = relations(productImages, ({ one }) => ({ product: one(products, { fields: [productImages.productId], references: [products.id] }) }));
+export const productVariantsRelations = relations(productVariants, ({ one }) => ({ product: one(products, { fields: [productVariants.productId], references: [products.id] }) }));
+export const ordersRelations = relations(orders, ({ many }) => ({ items: many(orderItems) }));
+export const orderItemsRelations = relations(orderItems, ({ one }) => ({ order: one(orders, { fields: [orderItems.orderId], references: [orders.id] }) }));

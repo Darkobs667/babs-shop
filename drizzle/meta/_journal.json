@@ -8,6 +8,13 @@
       "when": 1790032035774,
       "tag": "0000_puzzling_the_twelve",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1790281548376,
+      "tag": "0001_luxuriant_energizer",
+      "breakpoints": true
     }
   ]
 }

@@ -6,27 +6,29 @@
    - Environments: .env.local
 
    Creating an optimized production build ...
- ✓ Compiled successfully in 17.3s
+ ✓ Compiled successfully in 22.7s
    Linting and checking validity of types ...
    Collecting page data ...
-   Generating static pages (0/6) ...
-   Generating static pages (1/6) 
-   Generating static pages (2/6) 
-   Generating static pages (4/6) 
- ✓ Generating static pages (6/6)
+   Generating static pages (0/7) ...
+   Generating static pages (1/7) 
+   Generating static pages (3/7) 
+   Generating static pages (5/7) 
+ ✓ Generating static pages (7/7)
    Finalizing page optimization ...
    Collecting build traces ...
 
 Route (app)                                 Size  First Load JS
 ┌ ƒ /                                      174 B         111 kB
 ├ ○ /_not-found                            993 B         104 kB
-├ ƒ /admin                                 127 B         103 kB
-├ ○ /admin/login                           767 B         103 kB
+├ ƒ /admin                                 133 B         103 kB
+├ ƒ /admin/analytics                       133 B         103 kB
+├ ƒ /admin/login                           767 B         103 kB
 ├ ƒ /admin/products                      1.46 kB         113 kB
 ├ ƒ /admin/products/[id]/edit              128 B         135 kB
 ├ ƒ /admin/products/new                    128 B         135 kB
-├ ƒ /api/uploadthing                       127 B         103 kB
-├ ƒ /catalogue                           1.81 kB         113 kB
+├ ƒ /api/uploadthing                       133 B         103 kB
+├ ƒ /api/visit                             133 B         103 kB
+├ ƒ /catalogue                           1.82 kB         113 kB
 ├ ○ /panier                              2.64 kB         116 kB
 └ ƒ /produits/[slug]                     2.03 kB         112 kB
 + First Load JS shared by all             103 kB

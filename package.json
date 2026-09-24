@@ -1,6 +1,7 @@
 {
   "name": "babs-catalog",
   "private": true,
+  "engines": { "node": ">=20.9.0" },
   "scripts": { "dev": "next dev", "build": "next build", "start": "next start", "db:generate": "drizzle-kit generate", "db:migrate": "drizzle-kit migrate", "admin:hash": "node scripts/hash-admin-password.mjs", "admin:verify": "node scripts/verify-admin-password.mjs" },
   "dependencies": {
     "@uploadthing/react": "^7.3.3",

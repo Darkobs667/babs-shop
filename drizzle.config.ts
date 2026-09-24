@@ -1,5 +1,5 @@
 import type { Config } from "drizzle-kit";
-import nextEnv from "@next/env";
+import * as nextEnv from "@next/env";
 
 const { loadEnvConfig } = nextEnv;
 
