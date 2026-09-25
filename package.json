@@ -2,7 +2,7 @@
   "name": "babs-catalog",
   "private": true,
   "engines": {
-    "node": ">=20.9.0"
+    "node": ">=20.9.0 <25"
   },
   "scripts": {
     "dev": "next dev",
