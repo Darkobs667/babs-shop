@@ -1,18 +1,5 @@
 "use client";
-
-import Image from "next/image";
-import { X } from "lucide-react";
-import { UploadDropzone } from "@/components/uploadthing";
-
-type Props = { value: string[]; onChange: (urls: string[]) => void };
-export function ProductImageUpload({ value, onChange }: Props) {
-  return <div className="space-y-3">
-    <UploadDropzone endpoint="productImage" onClientUploadComplete={(files) => { const urls = files.map((file) => file.ufsUrl ?? file.url ?? file.serverData?.url).filter((url): url is string => Boolean(url)); onChange([...value, ...urls]); }} onUploadError={(error) => window.alert(error.message)} />
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-      {value.map((url) => <div key={url} className="group relative aspect-square overflow-hidden rounded-md border">
-        <Image src={url} alt="Aperçu produit" fill className="object-cover" sizes="(max-width: 640px) 50vw, 25vw" />
-        <button type="button" aria-label="Supprimer l'image" onClick={() => onChange(value.filter((item) => item !== url))} className="absolute right-1 top-1 rounded-full bg-black/70 p-1 text-white"><X size={14} /></button>
-      </div>)}
-    </div>
-  </div>;
-}
+import { ImagePlus, X } from "lucide-react";
+import { useEffect, useMemo } from "react";
+type Props={value:string[];files:File[];onChange:(urls:string[])=>void;onFilesChange:(files:File[])=>void};
+export function ProductImageUpload({value,files,onChange,onFilesChange}:Props){const previews=useMemo(()=>files.map(file=>({file,url:URL.createObjectURL(file)})),[files]);useEffect(()=>()=>previews.forEach(x=>URL.revokeObjectURL(x.url)),[previews]);const add=(selected:FileList|null)=>{if(!selected)return;onFilesChange([...files,...Array.from(selected)].slice(0,8))};return <div className="space-y-3"><label className="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-zinc-300 bg-zinc-50 px-4 py-8 text-center hover:border-zinc-950 hover:bg-zinc-100"><ImagePlus size={26}/><span className="mt-2 font-medium">Choisir les images du produit</span><span className="mt-1 text-sm text-zinc-500">L'envoi vers Uploadthing sera effectué à l'enregistrement.</span><input type="file" accept="image/jpeg,image/png,image/webp" multiple className="sr-only" onChange={e=>{add(e.target.files);e.currentTarget.value=""}}/></label><div className="grid grid-cols-2 gap-3 sm:grid-cols-4">{previews.map(({file,url})=><div key={url} className="relative aspect-square overflow-hidden rounded-md border bg-zinc-100"><img src={url} alt={file.name} className="h-full w-full object-cover"/><span className="absolute bottom-1 left-1 rounded bg-zinc-900/80 px-1.5 py-1 text-xs text-white">Prêt</span><button type="button" onClick={()=>onFilesChange(files.filter(x=>x!==file))} className="absolute right-1 top-1 rounded-full bg-black/70 p-1 text-white" aria-label="Retirer l'image"><X size={14}/></button></div>)}{value.map(url=><div key={url} className="relative aspect-square overflow-hidden rounded-md border bg-zinc-100"><img src={url} alt="Image enregistrée" className="h-full w-full object-cover"/><button type="button" onClick={()=>onChange(value.filter(x=>x!==url))} className="absolute right-1 top-1 rounded-full bg-black/70 p-1 text-white" aria-label="Retirer l'image"><X size={14}/></button></div>)}</div></div>}

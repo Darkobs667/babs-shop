@@ -12,5 +12,5 @@ export const productInput = z.object({
 export const whatsappOrderInput = z.object({
   customerName: z.string().min(2).max(100).optional(), customerAddress: z.string().max(300).optional(),
   customerPhone: z.string().max(30).optional(),
-  items: z.array(z.object({ productId: z.string().uuid(), productName: z.string().min(1), variantName: z.string().optional(), unitPrice: z.number().nonnegative(), quantity: z.number().int().positive().max(99) })).min(1),
+  items: z.array(z.object({ productId: z.string().uuid(), variantId: z.string().uuid().optional(), quantity: z.number().int().positive().max(99) })).min(1).max(30),
 });

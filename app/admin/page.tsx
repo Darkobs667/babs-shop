@@ -1,3 +1,8 @@
-import { redirect } from "next/navigation";
-// L'administration démarre directement par la gestion des produits.
-export default function AdminPage() { redirect("/admin/products"); }
+import { count, eq, sql } from "drizzle-orm";
+import Link from "next/link";
+import { Plus, ShoppingBag } from "lucide-react";
+import { db } from "@/lib/db";
+import { orders, products } from "@/lib/db/schema";
+export const dynamic="force-dynamic";
+export default async function AdminDashboard(){const [[productsCount],[pending],[revenue]]=await Promise.all([db.select({value:count()}).from(products),db.select({value:count()}).from(orders).where(eq(orders.status,"PENDING_WHATSAPP")),db.select({value:sql<string>`coalesce(sum(${orders.total}) filter (where ${orders.status} in ('CONFIRMED','FULFILLED')),0)`}).from(orders)]);return <main className="mx-auto max-w-6xl p-4 sm:p-6 lg:p-8"><div className="flex items-center justify-between"><div><p className="text-sm font-medium text-zinc-500">Administration</p><h1 className="text-3xl font-bold">Tableau de bord</h1></div><Link href="/admin/products/new" className="inline-flex items-center gap-2 rounded-lg bg-black px-4 py-2.5 text-sm font-medium text-white"><Plus size={17}/>Ajouter un produit</Link></div><div className="mt-7 grid gap-4 sm:grid-cols-3"><Card label="Produits" value={productsCount.value}/><Card label="Commandes à traiter" value={pending.value}/><Card label="Ventes confirmées" value={`₣${Number(revenue.value).toLocaleString("fr-FR")}`}/></div><Link href="/admin/products" className="mt-7 flex items-center gap-3 rounded-xl border p-5 hover:bg-zinc-50"><span className="grid h-10 w-10 place-items-center rounded-lg bg-zinc-100"><ShoppingBag size={20}/></span><span><strong className="block">Gérer le catalogue</strong><span className="text-sm text-zinc-500">Produits, images, variantes et stock</span></span></Link></main>}
+function Card({label,value}:{label:string;value:string|number}){return <div className="rounded-xl border p-5"><p className="text-sm text-zinc-500">{label}</p><p className="mt-2 text-2xl font-bold">{value}</p></div>}

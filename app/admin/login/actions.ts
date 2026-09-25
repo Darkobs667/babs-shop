@@ -1,13 +1,18 @@
 "use server";
 import { compare } from "bcryptjs";
 import { cookies } from "next/headers";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { ADMIN_SESSION, createAdminSession } from "@/lib/auth";
+import { rateLimit, requestIp } from "@/lib/rate-limit";
 
 export type LoginState = { error: string };
 
 export async function login(_: LoginState, formData: FormData): Promise<LoginState> {
+  const requestHeaders = await headers();
+  const throttle = rateLimit(`login:${requestIp(requestHeaders)}`, 5, 15 * 60 * 1000);
+  if (throttle.limited) return { error: `Trop de tentatives. Reessayez dans ${throttle.retryAfter} secondes.` };
   const result = z.object({ email: z.string().email(), password: z.string().min(8) }).safeParse(Object.fromEntries(formData));
   if (!result.success) return { error: "Identifiants invalides." };
   const valid = result.data.email.trim().toLowerCase() === process.env.ADMIN_EMAIL?.trim().toLowerCase()
