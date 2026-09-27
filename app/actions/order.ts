@@ -36,6 +36,8 @@ export async function beginWhatsAppOrder(input: unknown) {
     const stock = variant ? variant.stock : product.stock;
     if (stock < item.quantity) throw new Error(`Stock insuffisant pour ${product.name}.`);
     return {
+      productId: product.id,
+      variantId: variant?.id,
       productName: product.name,
       variantName: variant?.name,
       unitPrice: Number(variant?.price ?? product.price),
@@ -46,7 +48,7 @@ export async function beginWhatsAppOrder(input: unknown) {
   const total = items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
   await db.transaction(async (tx) => {
     const [order] = await tx.insert(orders).values({ customerName: data.customerName, customerAddress: data.customerAddress, customerPhone: data.customerPhone, total: String(total) }).returning();
-    await tx.insert(orderItems).values(items.map((item) => ({ orderId: order.id, productName: item.productName, variantName: item.variantName, unitPrice: String(item.unitPrice), quantity: item.quantity })));
+    await tx.insert(orderItems).values(items.map((item) => ({ orderId: order.id, productId: item.productId, variantId: item.variantId, productName: item.productName, variantName: item.variantName, unitPrice: String(item.unitPrice), quantity: item.quantity })));
   });
   return createWhatsAppOrderUrl(process.env.NEXT_PUBLIC_WHATSAPP_NUMBER!, { ...data, items });
 }

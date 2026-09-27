@@ -20,7 +20,7 @@ Catalogue e-commerce responsive construit avec Next.js. Les clients parcourent l
 - CRUD produits : categorie, publication, mise en avant, stock general, variantes et images Uploadthing.
 - Apercu local des images avant l'envoi ; l'upload se produit a l'enregistrement du produit.
 - Gestion des commandes : filtres, coordonnees client, lignes de commande, lien WhatsApp et changement de statut.
-- Tableau de bord et statistiques : commandes, ventes confirmees et vues quotidiennes.
+- Tableau de bord et statistiques : commandes, ventes confirmees et visites quotidiennes approximatives.
 
 ## Stack technique
 
@@ -45,7 +45,7 @@ app/
   actions/order.ts         # Creation securisee d'une commande WhatsApp
   admin/                   # Tableau de bord, produits, commandes, analytics
   api/uploadthing/         # Route Uploadthing protegee par session admin
-  api/visit/               # Compteur anonyme de pages vues
+  api/visit/               # Compteur anonyme de visites quotidiennes
   layout.tsx               # Analytics Vercel et tracker de visite
 components/
   admin/                   # Navigation, formulaires produit, upload
@@ -157,17 +157,24 @@ Lorsqu'un admin cree, modifie ou supprime un produit, `revalidateTag("store-cata
 5. Le client est redirige vers WhatsApp avec un message structure.
 6. L'admin ouvre `/admin/orders`, consulte les articles, total, nom, telephone, adresse et date, contacte le client puis passe la commande a `CONFIRMED`, `FULFILLED` ou `CANCELLED`.
 
-Le changement de statut ne decompte pas automatiquement le stock : le paiement et la livraison sont confirmes manuellement sur WhatsApp. Si une reservation/decrement automatique est souhaitee, elle doit etre ajoutee avec des references produit/variante dans les lignes de commande.
+### Regles de stock
+
+- `PENDING_WHATSAPP` : aucune reservation, le client doit encore confirmer par WhatsApp.
+- `CONFIRMED` ou `FULFILLED` : le stock du produit ou de la variante est diminue dans une transaction PostgreSQL atomique.
+- `CANCELLED` apres une commande confirmee/livree : le stock est automatiquement restaure.
+- Une confirmation echoue si le stock est devenu insuffisant entre la demande client et la validation admin.
+
+Les lignes de commande conservent les references produit et variante des nouvelles commandes. Les anciennes commandes creees avant la migration `0003_easy_the_hand.sql` restent consultables mais ne peuvent pas declencher une reservation automatique, car elles ne possedent pas ces references.
 
 ## Suivi des visiteurs
 
-`VisitTracker` appelle `/api/visit` sur chaque navigation publique. La route incremente seulement :
+`VisitTracker` appelle `/api/visit` sur chaque navigation publique. Un cookie HTTP-only anonyme (`babs_visit_day`) permet de compter au maximum une visite par navigateur et par jour UTC. La route incremente seulement :
 
 ```text
-date -> nombre de pages vues
+date -> nombre de navigateurs visites (approximation)
 ```
 
-Elle ne stocke pas d'adresse IP, cookie, compte client ou profil visiteur. Ce n'est donc pas un compteur de visiteurs uniques. Vercel Web Analytics ajoute des mesures anonymes de pages vues, referents et appareils dans le dashboard Vercel.
+Le cookie ne contient qu'une date et expire a la fin de la journee UTC. Aucun identifiant personnel, compte client ou profil visiteur n'est stocke. Cette metrique reste une approximation : supprimer les cookies ou utiliser plusieurs navigateurs cree plusieurs visites. Vercel Web Analytics ajoute des mesures anonymes de pages vues, referents et appareils dans le dashboard Vercel.
 
 ## Securite
 

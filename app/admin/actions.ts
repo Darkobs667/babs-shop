@@ -1,5 +1,5 @@
 "use server";
-import { eq } from "drizzle-orm";
+import { and, eq, gte, sql } from "drizzle-orm";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { isAdmin } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -46,8 +46,34 @@ export async function deleteProduct(id: string) {
 export async function updateOrderStatus(formData: FormData) {
   if (!(await isAdmin())) throw new Error("Non autorise");
   const data = orderStatusInput.parse(Object.fromEntries(formData));
-  const [order] = await db.update(orders).set({ status: data.status }).where(eq(orders.id, data.id)).returning({ id: orders.id });
-  if (!order) throw new Error("Commande introuvable");
+  await db.transaction(async (tx) => {
+    const order = await tx.query.orders.findFirst({ where: eq(orders.id, data.id), with: { items: true } });
+    if (!order) throw new Error("Commande introuvable");
+    const reservedBefore = order.status === "CONFIRMED" || order.status === "FULFILLED";
+    const reservedAfter = data.status === "CONFIRMED" || data.status === "FULFILLED";
+
+    if (!reservedBefore && reservedAfter) {
+      for (const item of order.items) {
+        if (!item.productId) throw new Error("Cette ancienne commande ne contient pas les references de stock necessaires.");
+        const updated = item.variantId
+          ? await tx.update(productVariants).set({ stock: sql`${productVariants.stock} - ${item.quantity}` }).where(and(eq(productVariants.id, item.variantId), gte(productVariants.stock, item.quantity))).returning({ id: productVariants.id })
+          : await tx.update(products).set({ stock: sql`${products.stock} - ${item.quantity}`, updatedAt: new Date() }).where(and(eq(products.id, item.productId), gte(products.stock, item.quantity))).returning({ id: products.id });
+        if (!updated.length) throw new Error(`Stock insuffisant pour ${item.productName}.`);
+      }
+    }
+
+    if (reservedBefore && !reservedAfter) {
+      for (const item of order.items) {
+        if (!item.productId) continue;
+        if (item.variantId) await tx.update(productVariants).set({ stock: sql`${productVariants.stock} + ${item.quantity}` }).where(eq(productVariants.id, item.variantId));
+        else await tx.update(products).set({ stock: sql`${products.stock} + ${item.quantity}`, updatedAt: new Date() }).where(eq(products.id, item.productId));
+      }
+    }
+    await tx.update(orders).set({ status: data.status }).where(eq(orders.id, data.id));
+  });
+  revalidateTag("store-catalog", "max");
+  revalidatePath("/");
+  revalidatePath("/catalogue");
   revalidatePath("/admin");
   revalidatePath("/admin/orders");
   revalidatePath("/admin/analytics");
