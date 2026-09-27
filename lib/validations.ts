@@ -10,7 +10,12 @@ export const productInput = z.object({
   variants: z.array(z.object({ name: z.string().trim().min(1).max(100), sku: z.string().trim().max(80).optional(), price: z.number().nonnegative().nullable(), stock: z.number().int().nonnegative().max(999999) })).max(30).default([]),
 });
 export const whatsappOrderInput = z.object({
-  customerName: z.string().min(2).max(100).optional(), customerAddress: z.string().max(300).optional(),
-  customerPhone: z.string().max(30).optional(),
+  customerName: z.string().trim().min(2).max(100), customerAddress: z.string().trim().min(5).max(300),
+  customerPhone: z.string().trim().regex(/^\+?[0-9][0-9 .()-]{7,28}$/, "Numero de telephone invalide"),
   items: z.array(z.object({ productId: z.string().uuid(), variantId: z.string().uuid().optional(), quantity: z.number().int().positive().max(99) })).min(1).max(30),
+});
+
+export const orderStatusInput = z.object({
+  id: z.string().uuid(),
+  status: z.enum(["PENDING_WHATSAPP", "CONFIRMED", "FULFILLED", "CANCELLED"]),
 });

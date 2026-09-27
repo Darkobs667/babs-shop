@@ -1,10 +1,10 @@
 "use server";
 import { eq } from "drizzle-orm";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { isAdmin } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { categories, productImages, products, productVariants } from "@/lib/db/schema";
-import { productInput } from "@/lib/validations";
+import { categories, orders, productImages, products, productVariants } from "@/lib/db/schema";
+import { orderStatusInput, productInput } from "@/lib/validations";
 
 export async function saveProduct(input: unknown) {
   if (!(await isAdmin())) throw new Error("Non autorisé");
@@ -29,6 +29,7 @@ export async function saveProduct(input: unknown) {
     if (variants.length) await tx.insert(productVariants).values(variants.map((variant) => ({ productId: saved.id, name: variant.name, sku: variant.sku || null, price: variant.price === null ? null : String(variant.price), stock: variant.stock })));
     return saved;
   });
+  revalidateTag("store-catalog", "max");
   revalidatePath("/"); revalidatePath(`/produits/${product.slug}`); revalidatePath("/catalogue");
   revalidatePath("/admin/products");
   return product;
@@ -38,5 +39,16 @@ export async function deleteProduct(id: string) {
   if (!(await isAdmin())) throw new Error("Non autorisé");
   const [product] = await db.delete(products).where(eq(products.id, id)).returning({ slug: products.slug });
   if (!product) throw new Error("Produit introuvable");
+  revalidateTag("store-catalog", "max");
   revalidatePath("/"); revalidatePath("/catalogue"); revalidatePath("/admin/products"); revalidatePath(`/produits/${product.slug}`);
+}
+
+export async function updateOrderStatus(formData: FormData) {
+  if (!(await isAdmin())) throw new Error("Non autorise");
+  const data = orderStatusInput.parse(Object.fromEntries(formData));
+  const [order] = await db.update(orders).set({ status: data.status }).where(eq(orders.id, data.id)).returning({ id: orders.id });
+  if (!order) throw new Error("Commande introuvable");
+  revalidatePath("/admin");
+  revalidatePath("/admin/orders");
+  revalidatePath("/admin/analytics");
 }

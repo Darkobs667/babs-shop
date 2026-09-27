@@ -7,7 +7,7 @@ const nextConfig = {
       { protocol: "https", hostname: "uploadthing.com" },
     ],
   },
-  // Les pages catalogue utilisent revalidate; aucune fonction longue n'est requise sur Vercel Hobby.
+  // Les requetes catalogue sont mises en cache dans le Data Cache Next.js/Vercel.
 };
 
 module.exports = nextConfig;
